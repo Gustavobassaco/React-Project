@@ -1,0 +1,23 @@
+.container {
+  padding: 20px;
+  min-height: 100vh;
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: rgba(222, 222, 222, 0.9);
+}
+
+.posts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.container-button {
+  min-width: 70px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.container-input {
+  margin-bottom: 15px;
+}
