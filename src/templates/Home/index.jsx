@@ -1,93 +1,162 @@
 // import logo from './logo.svg';
 import './styles.css';
-import { Component } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { loadPosts } from '../../Utils/loadPost';
 import { Posts } from '../../components/Posts';
 import { Button } from '../../components/Button';
 import { SearchInput } from '../../components/SearchInput';
 
-// -----------------------------------------------------------------------------------
-// -----------------------------------------------------------------------------------
-// -----------------------------------------------------------------------------------
+export const Home = () => {
 
-// -----------------------------------------------------------------------------------
-// Separação de componentes
-export default class Home extends Component {
-  state = {
-    posts: [],
-    allPosts: [],
-    page: 0,
-    postsPerPage: 3,
-    searchValue: ''
-  };
+  const [posts, setPosts] = useState([]);
+  const [allPosts, setAllPosts] = useState([]);
+  const [page, setPage] = useState(0);
+  const [postsPerPage, setPostsPerPage] = useState(10)
+  const [searchValue, setSearchValue] = useState('')
+  
+  // const { posts, page, postsPerPage, allPosts, searchValue } = this.state;
+  const noMorePosts = page + postsPerPage >= allPosts.length;
+  
+  const filteredPosts = !!searchValue ?
+  allPosts.filter(
+    (post) => 
+      post.title.toLowerCase().includes(
+        searchValue.toLowerCase()
+      )
+  )
+  : posts;
 
-  async componentDidMount() {
-    const { page, postsPerPage } = this.state;
+  
+  const handleLoadPosts = useCallback(async (page, postsPerPage) => {
     const postAndPhothos = await loadPosts();
-    this.setState({
-      posts: postAndPhothos.slice(page, postsPerPage),
-      allPosts: postAndPhothos,
-    })
-  }
+    setPosts(postAndPhothos.slice(page, postsPerPage))
+    setAllPosts(postAndPhothos)
+  }, [])
 
-  loadMorePosts = () => {
-    const { page, postsPerPage, allPosts, posts } = this.state
+  useEffect(()=> {
+    handleLoadPosts(0, postsPerPage)
+  }, [handleLoadPosts, postsPerPage]) // se alguma dependencia mudar, essa função é chamada novamente
+
+  const loadMorePosts = () => {
     const nextPage = page + postsPerPage;
     const nextPosts = allPosts.slice(nextPage, nextPage + postsPerPage)
     posts.push(...nextPosts);
-    this.setState({ posts, page: nextPage })
+    setPosts(posts)
+    setPage(nextPage)
   }
 
-  handleChange = (e) => {
+  const handleChange = (e) => {
     const { value } = e.target;
-    this.setState({
-      searchValue: value
-    })
+    setSearchValue(value)
   }
 
-  render() {
-    const { posts, page, postsPerPage, allPosts, searchValue } = this.state;
-    const noMorePosts = page + postsPerPage >= allPosts.length;
-
-    // operação ternária
-    const filteredPosts = !!searchValue ?
-      allPosts.filter(
-        (post) => 
-          post.title.toLowerCase().includes(
-            searchValue.toLowerCase()
-          )
-      )
-      : posts;
-
-
-    return (
-      <div className='container'>
-        {!!searchValue && (
-          <div>
-            <h1>Search value: {searchValue}</h1>
-          </div>
-        )}
-        <div className='container-input'>
-          <SearchInput 
-          searchValue={searchValue}
-          handleChange={this.handleChange}/>
+  
+  return (
+    <div className='container'>
+      {!!searchValue && (
+        <div>
+          <h1>Search value: {searchValue}</h1>
         </div>
-        {filteredPosts.length === 0 &&  (
-          <h1>Nenhum Post encontrado</h1>
-        )}
-        <Posts   posts={filteredPosts} />
-        {!searchValue && (
-          <div className='container-button'>
-            <Button text="More Posts"
-              onClick={this.loadMorePosts}
-              disabled={noMorePosts}
-            />
-          </div>
-        )}
+      )}
+      <div className='container-input'>
+        <SearchInput 
+        searchValue={searchValue}
+        handleChange={handleChange}/>
       </div>
-    );
-  }
+      {filteredPosts.length === 0 &&  (
+        <h1>Nenhum Post encontrado</h1>
+      )}
+      <Posts   posts={filteredPosts} />
+      {!searchValue && (
+        <div className='container-button'>
+          <Button text="More Posts"
+            onClick={loadMorePosts}
+            disabled={noMorePosts}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
+export default Home;
+
+
+// export default class Home2 extends Component {
+//   state = {
+//     posts: [],
+//     allPosts: [],
+//     page: 0,
+//     postsPerPage: 3,
+//     searchValue: ''
+//   };
+
+//   async componentDidMount() {
+//     const { page, postsPerPage } = this.state;
+//     const postAndPhothos = await loadPosts();
+//     this.setState({
+//       posts: postAndPhothos.slice(page, postsPerPage),
+//       allPosts: postAndPhothos,
+//     })
+//   }
+
+//   loadMorePosts = () => {
+//     const { page, postsPerPage, allPosts, posts } = this.state
+//     const nextPage = page + postsPerPage;
+//     const nextPosts = allPosts.slice(nextPage, nextPage + postsPerPage)
+//     posts.push(...nextPosts);
+//     this.setState({ posts, page: nextPage })
+//   }
+
+//   handleChange = (e) => {
+//     const { value } = e.target;
+//     this.setState({
+//       searchValue: value
+//     })
+//   }
+
+//   render() {
+//     const { posts, page, postsPerPage, allPosts, searchValue } = this.state;
+//     const noMorePosts = page + postsPerPage >= allPosts.length;
+
+//     // operação ternária
+//     const filteredPosts = !!searchValue ?
+//       allPosts.filter(
+//         (post) => 
+//           post.title.toLowerCase().includes(
+//             searchValue.toLowerCase()
+//           )
+//       )
+//       : posts;
+
+
+//     return (
+//       <div className='container'>
+//         {!!searchValue && (
+//           <div>
+//             <h1>Search value: {searchValue}</h1>
+//           </div>
+//         )}
+//         <div className='container-input'>
+//           <SearchInput 
+//           searchValue={searchValue}
+//           handleChange={this.handleChange}/>
+//         </div>
+//         {filteredPosts.length === 0 &&  (
+//           <h1>Nenhum Post encontrado</h1>
+//         )}
+//         <Posts   posts={filteredPosts} />
+//         {!searchValue && (
+//           <div className='container-button'>
+//             <Button text="More Posts"
+//               onClick={this.loadMorePosts}
+//               disabled={noMorePosts}
+//             />
+//           </div>
+//         )}
+//       </div>
+//     );
+//   }
+// }
 
 
 // -----------------------------------------------------------------------------------
